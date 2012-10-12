@@ -2,7 +2,7 @@
 class traffic
 {
     /**
-    * @var string    If set this string will be required to be in the referer header.
+    * @var mixed    If set this string will be required to be in the referer header.
     */
     public $referer = null;
 
@@ -60,11 +60,29 @@ class traffic
     * @return bool  true if matches
     */    
     public function assert_request_method( $request_method ) {
+    
         if( $request_method == $this->method )
             return true;
         return false;   
     }
+ 
+     /**
+    * Check if referer matches expected
+    *
+    * @param string $referer  The substring to look for in referer header, defaults to preset.
+    *
+    * @return bool  true if matches
+    */  
+    public function assert_referer( $referer=null ) {
     
+        if( $referer !== null )
+            $this->referer = $referer;
+        
+        if( strpos( $_SERVER['HTTP_REFERER'], $this->referer ) !== false )
+            return true;
+
+        return false;
+    }
     
     /**
     * Uses reverse DNS to see if this is white-listed traffic.
@@ -99,20 +117,16 @@ class traffic
         
         if( $this->good_bot() )
             return false;
-
-        if( $referer !== null )
-            $this->referer = $referer;
             
         foreach( $this->deny as $header=>$required )
             if( $required && !isset($this->rHeaders[$header]) )
                 return true;
 
         if( $this->referer )
-            if( strpos( $_SERVER['HTTP_REFERER'], $this->referer ) === false )
-                return true;
+            $this->assert_referer( $referer );
 
         if( $this->blacklisted() )
-                return true;
+            return true;
                 
         return false;
     }
