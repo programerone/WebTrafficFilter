@@ -1,6 +1,4 @@
-<?
-namespace traffix;
-
+<?php
 class traffic
 {
     /**
@@ -22,8 +20,8 @@ class traffic
 
         $this->ip            = getenv('REMOTE_ADDR');
         $this->rDNS          = gethostbyname( $this->ip );
-        $this->request_time  = microtime();
-        $this->rHeaders      = http_get_request_headers();
+        $this->request_time  = time();
+        $this->rHeaders      = apache_request_headers();
         $this->user_agent    = $_SERVER['HTTP_USER_AGENT'];
         $this->script        = $_SERVER['PHP_SELF'];
         $this->method        = $_SERVER['REQUEST_METHOD'];
@@ -49,8 +47,24 @@ class traffic
         'request_headers'   => $this->rHeaders,
         'request_time'      => $this->request_time,
         'rDNS'              => $this->rDNS,
-        'ip'                => $this->ip );
+        'ip'                => $this->ip,
+        'method'            => $this->method,
+        'script'            => $this->script );
     }
+
+    /**
+    * Check if request method is the expected type
+    *
+    * @param string $request_method  'GET', 'POST', or expected method.
+    *
+    * @return bool  true if matches
+    */    
+    public function assert_request_method( $request_method ) {
+        if( $request_method == $this->method )
+            return true;
+        return false;   
+    }
+    
     
     /**
     * Uses reverse DNS to see if this is white-listed traffic.
