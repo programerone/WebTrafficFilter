@@ -5,7 +5,9 @@ traffix -- A Bot Detection Class and Traffic Analyzer
 
 This class tries to help identify suspicious traffic for logging or blocking. It provides some simple tools to determine if page requests are coming from natural traffic or if they are suspected as coming from automated scripts.
 
-##  Class Methods
+##  traffic.php traffic class methods
+
+The traffic class 
 
 ### Verifying the Referer Header
 
@@ -25,10 +27,13 @@ This class tries to help identify suspicious traffic for logging or blocking. It
 
         // These headers are required by default
         Host
-        Accept
-        Accept-Encoding
         Accept-Language
-        Cache-Control
-        Connection
         User-Agent
+
+*   You can check for a specific header via the assert_request_header function.
+
+        $traffix->assert_request_header( 'HTTP_X_REQUESTED_WITH', 'xmlhttprequest' );
         
+## Simple Example: Log initial requests.
+
+

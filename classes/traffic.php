@@ -28,13 +28,13 @@ class traffic
                 
         # Flags: Deny traffic missing these request headers when set to true.
         $this->deny['Host']               = true;
-        $this->deny['Accept']             = true;
-        $this->deny['Accept-Encoding']    = true;
+        $this->deny['Accept']             = false;
+        $this->deny['Accept-Encoding']    = false;
         $this->deny['Accept-Language']    = true;
-        $this->deny['Cache-Control']      = true;
-        $this->deny['Connection']         = true;
+        $this->deny['Cache-Control']      = false;
+        $this->deny['Connection']         = false;
         $this->deny['User-Agent']         = true;
-    }
+    }    
     
     /**
     * Returns traffic info.
@@ -65,6 +65,26 @@ class traffic
             return true;
         return false;   
     }
+    
+    /**
+    * Check if request header exists, also if it is expected if it matches $value
+    *
+    * @param string $header  The request header to check for.
+    * @param string $value  The required value if a match is required.
+    *
+    * @return bool  true if header exists and matches if $value is passed.
+    */ 
+    public function assert_request_header( $header, $value=null ) {
+
+        if( $value !== null )
+            if( $rHeaders[$header] == $value )
+                return true;
+                
+        elseif( isset($rHeader[$header]) )
+            return true;
+            
+        return false;
+    } 
  
      /**
     * Check if referer matches expected
