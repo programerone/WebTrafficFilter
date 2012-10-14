@@ -39,8 +39,8 @@ class mysql
     public function __construct( $test=null ) {
     
         if( $test ) {
-            $this->test = $test;
-            $this->errors('EXCEPTION');
+            self::test = $test;
+            self::errors('EXCEPTION');
         }
         self::connect();
     }
@@ -51,7 +51,7 @@ class mysql
     */    
     public function __destruct() {
 
-        $this->PDO = null;
+        self::PDO = null;
     }
 
     /**
@@ -79,14 +79,14 @@ class mysql
     public function connect( $host=null, $db=null, $user=null, $pass=null ) {
 
         if( $host === null ) {
-            $host   = $this->host;
-            $db     = $this->db;
-            $user   = $this->user;
-            $pass   = $this->pass;
+            $host   = self::host;
+            $db     = self::db;
+            $user   = self::user;
+            $pass   = self::pass;
         }
         
         try {
-            $this->PDO = new PDO( "mysql:host=$host;dbname=$db", $user, $pass );
+            self::PDO = new PDO( "mysql:host=$host;dbname=$db", $user, $pass );
             return true;
         }catch( PDOException $e ) {
             if( self::test )
@@ -98,21 +98,21 @@ class mysql
     /**
     * Queries the database for an INSERT or UPDATE statement
     *
-    * @param array $query       An array containing the details of the INSERT or UPDATE.
-    * @param string $query[0]   The SQL statement.
-    * @param array $query[1]    Assoc Array containing the column_name => values.
-    * @param mixed $insert_id   If passed, the id to the last inserted row is returned.
+    * @param array  $query          An array containing the details of the INSERT or UPDATE.
+    * @param string $query[0]       The SQL statement.
+    * @param array  $query[1]       Assoc Array containing the column_name => values.
+    * @param mixed  $insert_id      If passed, the id to the last inserted row is returned.
     *
     * @return mixed  The row count unless the last insert id is requested, false on failure.
     */
     public function alter( array &$query, $insert_id=null ) {
     
         try {
-            $stmt = $this->PDO->prepare( $query[0] );
+            $stmt = self::PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
             unset( $query );
             if( $insert_id )
-                return $this->PDO->lastInsertId();
+                return self::PDO->lastInsertId();
             else
                 return $stmt->rowCount();
         }catch( PDOException $e ) {
@@ -122,10 +122,18 @@ class mysql
         }
     }
 
-    public function insert( array &$query ) {
+    /**
+    * Queries the database for an INSERT statement without needing the SQL statement
+    *
+    * @param array  $query          Assoc Array containing the column_name => values.
+    * @param string $query[table]   Table name, should be first element.    
+    * @param mixed  $insert_id      If passed, the id to the last inserted row is returned.
+    *
+    * @return mixed  The row count unless the last insert id is requested, false on failure.
+    */
+    public function insert( array &$query, $insert_id=null ) {
     
-        try {
-        
+        try {        
             $q = "insert into $query[table]";
             unset($query['table']);
             
@@ -138,25 +146,28 @@ class mysql
             
             $q = "$q ($columns) values ($values)";
             
-            $stmt = $this->PDO->prepare( $q );
+            $stmt = self::PDO->prepare( $q );
             $stmt->execute( $query );
             unset( $query );
             
+            if( $insert_id )
+                return self::PDO->lastInsertId();
+            else
+                return $stmt->rowCount();            
         }catch( PDOException $e ) {
             if( self::test )
                 echo "[ERROR] mysql class: insert function: ".$e->getMessage()."\n";
             return false;
         }
     }
-    
-    
+        
     /**
     * Queries the database for a SELECT statement
     *
-    * @param array $query       An array containing the details of the SELECT.
-    * @param string $query[0]   The SQL statement.
-    * @param array $query[1]    Assoc Array containing the column_name => values.
-    * @param array $query[1]    Alternate return type, defaults to Associative Array if nothing is passed.
+    * @param array  $query          An array containing the details of the SELECT.
+    * @param string $query[0]       The SQL statement.
+    * @param array  $query[1]       Assoc Array containing the column_name => values.
+    * @param array  $query[1]       Alternate return type, defaults to Associative Array if nothing is passed.
     *
     * @return mixed  Returns the requested type or false on an error.
     */    
@@ -164,7 +175,7 @@ class mysql
     
         try {
             $return_type = $query[2];
-            $stmt = $this->PDO->prepare( $query[0] );
+            $stmt = self::PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
             unset( $query ); # If the query is from a loop this prevents only the first loop's SELECT from being used.
             
@@ -189,7 +200,7 @@ class mysql
     public function last_id() {
     
         try {
-            return $this->PDO->lastInsertId();
+            return self::PDO->lastInsertId();
         }catch( PDOException $e ) {
             if( self::test )
                 echo "[ERROR] mysql class: errors function: ".$e->getMessage()."\n";

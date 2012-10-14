@@ -15,6 +15,12 @@ This project has 3 parts that add a layer of protection to your content.
 
 ##  traffic class [logging]
 
+### Log Traffic
+
+*   Log traffic and record the request information if it's a new visit.
+
+        $traffix->log();
+
 ### Verifying the Referer Header
 
 *   If you have a page that processes a request from a form on your site you can verify that the Referer Header was passed and that it is matches your page or site. Some bots won't pass this header and can be filtered out in this manner. Pass the assert_referer() function a part or all of the expected referer URL.
@@ -41,14 +47,5 @@ This project has 3 parts that add a layer of protection to your content.
         $traffix->assert_request_header( 'MY_CUSTOM_HEADER' ); // returns true if exists
 
         $traffix->assert_request_header( 'HTTP_X_REQUESTED_WITH', 'xmlhttprequest' ); // returns true if exists & matches
-  
-## Simple Example: Log initial requests.
 
-    // Check log table for this IP, if it's the first request..
-    $traffix = new traffic;
-    
-    if( !$traffix::good_bot() ) { 
-        $request_info = $traffix::info();
-        // Log the information about the request..
-    }
 

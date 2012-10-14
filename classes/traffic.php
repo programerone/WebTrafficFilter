@@ -70,35 +70,37 @@ class traffic extends mysql
     public function log() {
     
         try{
-            $traffix_hits[] = 'select count(1) from traffix_hits where ip=:ip';
-            $traffix_hits[] = array('ip' => $this->ip);
-            list($exists)   = parent::select($traffix_hits);
+            if( !self::good_bot() ) {            
+                $traffix_hits[] = 'select count(1) from traffix_hits where ip=:ip';
+                $traffix_hits[] = array('ip' => $this->ip);
+                list($exists)   = parent::select($traffix_hits);
 
-            $traffix_hits[] = 'insert into traffix_hits (ip,time_stamp) values (:ip,:time_stamp)';
-            $traffix_hits[] = array(
-            'ip'            => $this->ip,
-            'time_stamp'    => time() );
-            parent::alter($traffix_hits);
-
-            if(!$exists) {
-                $traffix_request_log = array(
-                'table'             => 'traffix_request_log',
-                'ip'                => $this->ip,
-                'rDNS'              => $this->rDNS,
-                'request_time'      => time(),
-                'user_agent'        => $this->user_agent,
-                'script'            => $this->script,
-                'request_headers'   => json_encode( $this->rHeaders ),
-                'method'            => $this->method,
-                'rh_host'           => $this->assert_request_header( 'Host' ),
-                'rh_accept'         => $this->assert_request_header( 'Accept' ),
-                'rh_accept_encoding'=> $this->assert_request_header( 'Accept-Encoding' ),
-                'rh_accept_language'=> $this->assert_request_header( 'Accept-Language' ),
-                'rh_cache_control'  => $this->assert_request_header( 'Cache-Control' ),
-                'rh_connection'     => $this->assert_request_header( 'Connection' ),
-                'rh_user_agent'     => $this->assert_request_header( 'User-Agent' ) );
+                $traffix_hits[] = array(
+                'table'         => 'traffix_hits',
+                'ip'            => $this->ip,
+                'time_stamp'    => time() );
                 parent::insert($traffix_hits);
-        }
+
+                if(!$exists) {
+                    $traffix_request_log = array(
+                    'table'             => 'traffix_request_log',
+                    'ip'                => $this->ip,
+                    'rDNS'              => $this->rDNS,
+                    'request_time'      => time(),
+                    'user_agent'        => $this->user_agent,
+                    'script'            => $this->script,
+                    'request_headers'   => json_encode( $this->rHeaders ),
+                    'method'            => $this->method,
+                    'rh_host'           => $this->assert_request_header( 'Host' ),
+                    'rh_accept'         => $this->assert_request_header( 'Accept' ),
+                    'rh_accept_encoding'=> $this->assert_request_header( 'Accept-Encoding' ),
+                    'rh_accept_language'=> $this->assert_request_header( 'Accept-Language' ),
+                    'rh_cache_control'  => $this->assert_request_header( 'Cache-Control' ),
+                    'rh_connection'     => $this->assert_request_header( 'Connection' ),
+                    'rh_user_agent'     => $this->assert_request_header( 'User-Agent' ) );
+                    parent::insert($traffix_request_log);
+                }
+            }
         }catch( Exception $e ) {
             return false;
         }
