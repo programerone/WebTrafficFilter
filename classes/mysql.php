@@ -53,6 +53,18 @@ class mysql
 
         $this->PDO = null;
     }
+
+    /**
+    * Toggles testing mode.
+    *
+    * @param bool $test  True for on, false for off.
+    *
+    */    
+    public function testing_mode( bool $test ) {
+    
+        self::test = $test;
+        self::errors('EXCEPTION');
+    }
     
     /**
     * Connects to the database, if no hostname is sent the default login credential class variables are used.
@@ -77,12 +89,12 @@ class mysql
             $this->PDO = new PDO( "mysql:host=$host;dbname=$db", $user, $pass );
             return true;
         }catch( PDOException $e ) {
-            if( $this->test )
+            if( self::test )
                 echo "[ERROR] mysql class: connect function: ".$e->getMessage()."\n";
             return false;
         }
     }
-    
+
     /**
     * Queries the database for an INSERT or UPDATE statement
     *
@@ -98,18 +110,46 @@ class mysql
         try {
             $stmt = $this->PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
-            unset($query);
+            unset( $query );
             if( $insert_id )
                 return $this->PDO->lastInsertId();
             else
                 return $stmt->rowCount();
         }catch( PDOException $e ) {
-            if( $this->test )
+            if( self::test )
                 echo "[ERROR] mysql class: alter function: ".$e->getMessage()."\n";
             return false;
         }
     }
 
+    public function insert( array &$query ) {
+    
+        try {
+        
+            $q = "insert into $query[table]";
+            unset($query['table']);
+            
+            foreach( $query as $k=>$v ) {
+                $columns .= "$k,";
+                $values  .= ":$k,";
+            }
+            $columns = trim($columns,',');
+            $values  = trim($columns,',');
+            
+            $q = "$q ($columns) values ($values)";
+            
+            $stmt = $this->PDO->prepare( $q );
+            $stmt->execute( $query );
+            unset( $query );
+            
+        }catch( PDOException $e ) {
+            if( self::test )
+                echo "[ERROR] mysql class: insert function: ".$e->getMessage()."\n";
+            return false;
+        }
+    }
+    
+    
     /**
     * Queries the database for a SELECT statement
     *
@@ -126,7 +166,7 @@ class mysql
             $return_type = $query[2];
             $stmt = $this->PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
-            unset($query); # In case the query array is in a loop this will prevent only the first loop's SELECT from being used.
+            unset( $query ); # If the query is from a loop this prevents only the first loop's SELECT from being used.
             
             switch( $return_type ) {
                 case 'BOTH':    return $stmt->fetch( PDO::FETCH_BOTH );   break;
@@ -134,12 +174,13 @@ class mysql
                 default:        return $stmt->fetch( PDO::FETCH_ASSOC );  break;
             }
         }catch( PDOException $e ) {
-            if( $this->test )
+            if( self::test )
                 echo "[ERROR] mysql class: select function: ".$e->getMessage()."\n";
             return false;
         }
     }
 
+    
     /**
     * Gets the ID for the last inserted row.
     *
@@ -150,7 +191,8 @@ class mysql
         try {
             return $this->PDO->lastInsertId();
         }catch( PDOException $e ) {
-            echo "[ERROR] mysql class: errors function: ".$e->getMessage()."\n";
+            if( self::test )
+                echo "[ERROR] mysql class: errors function: ".$e->getMessage()."\n";
             return false;
         }
     }
@@ -172,7 +214,7 @@ class mysql
             }
             return true;
         }catch( PDOException $e ) {
-            if( $this->test )
+            if( self::test )
                 echo "[ERROR] mysql class: errors function: ".$e->getMessage()."\n";
             return false;
         }

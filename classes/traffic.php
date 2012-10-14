@@ -1,5 +1,7 @@
 <?php
-class traffic
+require_once dirname(__FILE__).'/mysql.php';
+
+class traffic extends mysql
 {
 
     /**
@@ -16,8 +18,14 @@ class traffic
     * @var bool      If true the deny function will check the ip against a blacklist.
     */
     private $blacklisted_ip = false;
-    
+
+    /**
+    * Get all the request information
+    *
+    */    
     public function __construct() {
+    
+        parent::__construct();
 
         $this->ip            = getenv('REMOTE_ADDR');
         $this->rDNS          = gethostbyname( $this->ip );
@@ -36,7 +44,6 @@ class traffic
         $this->deny['Connection']         = false;
         $this->deny['User-Agent']         = true;
     }    
-
    
     /**
     * Returns traffic info.
@@ -52,6 +59,49 @@ class traffic
         'ip'                => $this->ip,
         'method'            => $this->method,
         'script'            => $this->script );
+    }
+
+    /**
+    * Checks to see if this is a new visit. Logs ip and time of request. If this is a new visit, 
+    * details of the request are logged for later analysis.
+    * 
+    * @return bool  True on success.
+    */
+    public function log() {
+    
+        try{
+            $traffix_hits[] = 'select count(1) from traffix_hits where ip=:ip';
+            $traffix_hits[] = array('ip' => $this->ip);
+            list($exists)   = parent::select($traffix_hits);
+
+            $traffix_hits[] = 'insert into traffix_hits (ip,time_stamp) values (:ip,:time_stamp)';
+            $traffix_hits[] = array(
+            'ip'            => $this->ip,
+            'time_stamp'    => time() );
+            parent::alter($traffix_hits);
+
+            if(!$exists) {
+                $traffix_request_log = array(
+                'table'             => 'traffix_request_log',
+                'ip'                => $this->ip,
+                'rDNS'              => $this->rDNS,
+                'request_time'      => time(),
+                'user_agent'        => $this->user_agent,
+                'script'            => $this->script,
+                'request_headers'   => json_encode( $this->rHeaders ),
+                'method'            => $this->method,
+                'rh_host'           => $this->assert_request_header( 'Host' ),
+                'rh_accept'         => $this->assert_request_header( 'Accept' ),
+                'rh_accept_encoding'=> $this->assert_request_header( 'Accept-Encoding' ),
+                'rh_accept_language'=> $this->assert_request_header( 'Accept-Language' ),
+                'rh_cache_control'  => $this->assert_request_header( 'Cache-Control' ),
+                'rh_connection'     => $this->assert_request_header( 'Connection' ),
+                'rh_user_agent'     => $this->assert_request_header( 'User-Agent' ) );
+                parent::insert($traffix_hits);
+        }
+        }catch( Exception $e ) {
+            return false;
+        }
     }
 
     /**

@@ -1,11 +1,19 @@
-traffix -- A Bot Detection and Traffic Analyzer
+[traffix] Bot Detection and Traffic Analysis
 =========================================================
 
 ##  Description
 
 This project tries to help identify suspicious traffic for logging or blocking. It provides some simple tools to determine if page requests are coming from natural traffic or if they are suspected as coming from automated scripts.
 
-##  traffic class methods
+This project has 3 parts that add a layer of protection to your content.
+
+1. Logging.
+
+2. Analysis.
+
+3. Blocking.
+
+##  traffic class [logging]
 
 ### Verifying the Referer Header
 
@@ -18,7 +26,7 @@ This project tries to help identify suspicious traffic for logging or blocking. 
 *   Verify that the request was passed using the expected method.
 
         $traffix->assert_request_method('POST');
-        
+
 ### Require Request Headers
 
 *   All major browsers reliably send certain headers that may be absent in traffic coming from automated sources. When a request is made missing one or all of these headers you may want to log the request as suspicious or deny the traffic.
@@ -31,14 +39,16 @@ This project tries to help identify suspicious traffic for logging or blocking. 
 *   You can check for a specific request header via the assert_request_header function. If you pass a second parameter the function will check if the value of the header matches it.
 
         $traffix->assert_request_header( 'MY_CUSTOM_HEADER' ); // returns true if exists
-        
-        $traffix->assert_request_header( 'HTTP_X_REQUESTED_WITH', 'xmlhttprequest' ); // returns true if it exists & matches
-        
+
+        $traffix->assert_request_header( 'HTTP_X_REQUESTED_WITH', 'xmlhttprequest' ); // returns true if exists & matches
+  
 ## Simple Example: Log initial requests.
 
     // Check log table for this IP, if it's the first request..
     $traffix = new traffic;
+    
     if( !$traffix::good_bot() ) { 
         $request_info = $traffix::info();
         // Log the information about the request..
     }
+
