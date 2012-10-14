@@ -1,6 +1,7 @@
 <?php
 class traffic
 {
+
     /**
     * @var mixed    If set this string will be required to be in the referer header.
     */
@@ -35,7 +36,8 @@ class traffic
         $this->deny['Connection']         = false;
         $this->deny['User-Agent']         = true;
     }    
-    
+
+   
     /**
     * Returns traffic info.
     *
@@ -67,12 +69,12 @@ class traffic
     }
     
     /**
-    * Check if request header exists, also if it is expected if it matches $value
+    * Check if the header exists and if it matches the value, if passed.
     *
     * @param string $header  The request header to check for.
-    * @param string $value  The required value if a match is required.
+    * @param string $value  The value to require for the header, if passed.
     *
-    * @return bool  true if header exists and matches if $value is passed.
+    * @return bool  true if matches
     */ 
     public function assert_request_header( $header, $value=null ) {
 
@@ -86,7 +88,7 @@ class traffic
         return false;
     } 
  
-     /**
+    /**
     * Check if referer matches expected
     *
     * @param string $referer  The substring to look for in referer header, defaults to preset.
@@ -109,7 +111,7 @@ class traffic
     *
     * @return bool  Returns true for good bots.
     */
-    private function good_bot() {
+    public function good_bot() {
     
         if( preg_match( '#\.googlebot\.com$#', $this->rDNS ) )
             return true;
@@ -134,10 +136,10 @@ class traffic
     * @return bool  Returns true to deny traffic.
     */
     public function deny( $referer=null ) {
-        
+
         if( $this->good_bot() )
             return false;
-            
+
         foreach( $this->deny as $header=>$required )
             if( $required && !isset($this->rHeaders[$header]) )
                 return true;
@@ -147,7 +149,7 @@ class traffic
 
         if( $this->blacklisted() )
             return true;
-                
+
         return false;
     }
 
@@ -166,7 +168,7 @@ class traffic
 
         $ips = array(
         'ban.ned.ip.add.r' );
-        
+
         if( $this->blacklisted_user_agent ) {
             foreach( $user_agents as $banned )
                 if( strpos( $this->user_agent, $banned ) !== false )
@@ -181,8 +183,6 @@ class traffic
 
         return false;
     }
-
-    # Add a proxy checking function, add this to the IP blacklist..
     
 }
 ?>

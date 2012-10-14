@@ -1,13 +1,11 @@
-traffix -- A Bot Detection Class and Traffic Analyzer
+traffix -- A Bot Detection and Traffic Analyzer
 =========================================================
 
 ##  Description
 
-This class tries to help identify suspicious traffic for logging or blocking. It provides some simple tools to determine if page requests are coming from natural traffic or if they are suspected as coming from automated scripts.
+This project tries to help identify suspicious traffic for logging or blocking. It provides some simple tools to determine if page requests are coming from natural traffic or if they are suspected as coming from automated scripts.
 
-##  traffic.php traffic class methods
-
-The traffic class 
+##  traffic class methods
 
 ### Verifying the Referer Header
 
@@ -30,10 +28,17 @@ The traffic class
         Accept-Language
         User-Agent
 
-*   You can check for a specific header via the assert_request_header function.
+*   You can check for a specific request header via the assert_request_header function. If you pass a second parameter the function will check if the value of the header matches it.
 
-        $traffix->assert_request_header( 'HTTP_X_REQUESTED_WITH', 'xmlhttprequest' );
+        $traffix->assert_request_header( 'MY_CUSTOM_HEADER' ); // returns true if exists
+        
+        $traffix->assert_request_header( 'HTTP_X_REQUESTED_WITH', 'xmlhttprequest' ); // returns true if it exists & matches
         
 ## Simple Example: Log initial requests.
 
-
+    // Check log table for this IP, if it's the first request..
+    $traffix = new traffic;
+    if( !$traffix::good_bot() ) { 
+        $request_info = $traffix::info();
+        // Log the information about the request..
+    }
