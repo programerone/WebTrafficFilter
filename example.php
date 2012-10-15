@@ -1,6 +1,5 @@
 <?php
-require_once dirname(__FILE__).'/classes/traffic.php';
-$traffix = new traffic;
-
+require_once dirname(__FILE__).'/classes/traffix.php';
+$traffix = new traffix;
 $traffix->log();
 ?>

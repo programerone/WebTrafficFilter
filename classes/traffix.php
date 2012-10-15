@@ -1,7 +1,7 @@
 <?php
 require_once dirname(__FILE__).'/mysql.php';
 
-class traffic extends mysql
+class traffix extends traffix_mysql
 {
 
     /**
@@ -27,38 +27,52 @@ class traffic extends mysql
     
         parent::__construct();
 
-        $this->ip            = getenv('REMOTE_ADDR');
+        $this->ip            = $_SERVER['REMOTE_ADDR'];
         $this->rDNS          = gethostbyname( $this->ip );
         $this->request_time  = time();
-        $this->rHeaders      = apache_request_headers();
+        
+        if( function_exists( 'apache_request_headers' ) )
+            $this->rHeaders  = apache_request_headers();
+            
+        elseif( function_exists( 'http_get_request_headers' ) )
+            $this->rHeaders  = http_get_request_headers();
+        
+        else
+            $this->rHeaders = self::check_for_known_headers();
+        
         $this->user_agent    = $_SERVER['HTTP_USER_AGENT'];
         $this->script        = $_SERVER['PHP_SELF'];
         $this->method        = $_SERVER['REQUEST_METHOD'];
                 
-        # Flags: Deny traffic missing these request headers when set to true.
-        $this->deny['Host']               = true;
+        # Flags: Deny traffic missing these request headers when set to true, when the deny function is called.
         $this->deny['Accept']             = false;
         $this->deny['Accept-Encoding']    = false;
-        $this->deny['Accept-Language']    = true;
         $this->deny['Cache-Control']      = false;
         $this->deny['Connection']         = false;
+        $this->deny['Host']               = true;
+        $this->deny['Accept-Language']    = true;
         $this->deny['User-Agent']         = true;
-    }    
-   
+    }
+
     /**
-    * Returns traffic info.
+    * Gets headers from the $_SERVER variable if the header functions don't exist
     *
-    * @return array  Array of collected information.
+    * @return none
     */    
-    public function info() {
-        return array(
-        'user_agent'        => $this->user_agent,
-        'request_headers'   => $this->rHeaders,
-        'request_time'      => $this->request_time,
-        'rDNS'              => $this->rDNS,
-        'ip'                => $this->ip,
-        'method'            => $this->method,
-        'script'            => $this->script );
+    private function check_for_known_headers() {
+    
+        $headers = array(
+        'HTTP_ACCEPT',
+        'HTTP_ACCEPT_CHARSET',
+        'HTTP_ACCEPT_ENCODING',
+        'HTTP_ACCEPT_LANGUAGE',
+        'HTTP_CONNECTION',
+        'HTTP_HOST',
+        'HTTP_REFERER',
+        'HTTP_USER_AGENT' );
+        foreach( $headers as $h )
+            if( isset( $_SESSION[$h] ) )
+                $this->rHeaders[$h] = $_SESSION[$h];
     }
 
     /**
@@ -71,11 +85,11 @@ class traffic extends mysql
     
         try{
             if( !self::good_bot() ) {            
-                $traffix_hits[] = 'select count(1) from traffix_hits where ip=:ip';
-                $traffix_hits[] = array('ip' => $this->ip);
-                list($exists)   = parent::select($traffix_hits);
+                $count[] = 'select count(1) from traffix_hits where ip=:ip';
+                $count[] = array('ip' => $this->ip);
+                list($exists)   = parent::select($count);
 
-                $traffix_hits[] = array(
+                $traffix_hits = array(
                 'table'         => 'traffix_hits',
                 'ip'            => $this->ip,
                 'time_stamp'    => time() );
@@ -98,12 +112,29 @@ class traffic extends mysql
                     'rh_cache_control'  => $this->assert_request_header( 'Cache-Control' ),
                     'rh_connection'     => $this->assert_request_header( 'Connection' ),
                     'rh_user_agent'     => $this->assert_request_header( 'User-Agent' ) );
-                    parent::insert($traffix_request_log);
+                    parent::insert( $traffix_request_log );
                 }
+                return true;
             }
         }catch( Exception $e ) {
             return false;
         }
+    }
+    
+    /**
+    * Returns traffic info.
+    *
+    * @return array  Array of collected information.
+    */    
+    public function info() {
+        return array(
+        'user_agent'        => $this->user_agent,
+        'request_headers'   => $this->rHeaders,
+        'request_time'      => $this->request_time,
+        'rDNS'              => $this->rDNS,
+        'ip'                => $this->ip,
+        'method'            => $this->method,
+        'script'            => $this->script );
     }
 
     /**
@@ -131,14 +162,14 @@ class traffic extends mysql
     public function assert_request_header( $header, $value=null ) {
 
         if( $value !== null )
-            if( $rHeaders[$header] == $value )
+            if( $this->rHeaders[$header] == $value )
                 return true;
-                
-        elseif( isset($rHeader[$header]) )
+
+        elseif( isset( $this->rHeader[$header] ) )
             return true;
-            
+
         return false;
-    } 
+    }
  
     /**
     * Check if referer matches expected
@@ -189,17 +220,17 @@ class traffic extends mysql
     */
     public function deny( $referer=null ) {
 
-        if( $this->good_bot() )
+        if( self::good_bot() )
             return false;
 
         foreach( $this->deny as $header=>$required )
-            if( $required && !isset($this->rHeaders[$header]) )
+            if( $required && !isset( $this->rHeaders[$header] ) )
                 return true;
 
         if( $this->referer )
-            $this->assert_referer( $referer );
+            self::assert_referer( $referer );
 
-        if( $this->blacklisted() )
+        if( self::blacklisted() )
             return true;
 
         return false;

@@ -1,5 +1,5 @@
 <?php
-class mysql
+class traffix_mysql
 {
 
     /**
@@ -39,7 +39,7 @@ class mysql
     public function __construct( $test=null ) {
     
         if( $test ) {
-            self::test = $test;
+            $this->test = $test;
             self::errors('EXCEPTION');
         }
         self::connect();
@@ -51,7 +51,7 @@ class mysql
     */    
     public function __destruct() {
 
-        self::PDO = null;
+        $this->PDO = null;
     }
 
     /**
@@ -62,7 +62,7 @@ class mysql
     */    
     public function testing_mode( bool $test ) {
     
-        self::test = $test;
+        $this->test = $test;
         self::errors('EXCEPTION');
     }
     
@@ -79,17 +79,17 @@ class mysql
     public function connect( $host=null, $db=null, $user=null, $pass=null ) {
 
         if( $host === null ) {
-            $host   = self::host;
-            $db     = self::db;
-            $user   = self::user;
-            $pass   = self::pass;
+            $host   = $this->host;
+            $db     = $this->db;
+            $user   = $this->user;
+            $pass   = $this->pass;
         }
         
         try {
-            self::PDO = new PDO( "mysql:host=$host;dbname=$db", $user, $pass );
+            $this->PDO = new PDO( "mysql:host=$host;dbname=$db", $user, $pass );
             return true;
         }catch( PDOException $e ) {
-            if( self::test )
+            if( $this->test )
                 echo "[ERROR] mysql class: connect function: ".$e->getMessage()."\n";
             return false;
         }
@@ -108,59 +108,20 @@ class mysql
     public function alter( array &$query, $insert_id=null ) {
     
         try {
-            $stmt = self::PDO->prepare( $query[0] );
+            $stmt = $this->PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
             unset( $query );
             if( $insert_id )
-                return self::PDO->lastInsertId();
+                return $this->PDO->lastInsertId();
             else
                 return $stmt->rowCount();
         }catch( PDOException $e ) {
-            if( self::test )
+            if( $this->test )
                 echo "[ERROR] mysql class: alter function: ".$e->getMessage()."\n";
             return false;
         }
     }
 
-    /**
-    * Queries the database for an INSERT statement without needing the SQL statement
-    *
-    * @param array  $query          Assoc Array containing the column_name => values.
-    * @param string $query[table]   Table name, should be first element.    
-    * @param mixed  $insert_id      If passed, the id to the last inserted row is returned.
-    *
-    * @return mixed  The row count unless the last insert id is requested, false on failure.
-    */
-    public function insert( array &$query, $insert_id=null ) {
-    
-        try {        
-            $q = "insert into $query[table]";
-            unset($query['table']);
-            
-            foreach( $query as $k=>$v ) {
-                $columns .= "$k,";
-                $values  .= ":$k,";
-            }
-            $columns = trim($columns,',');
-            $values  = trim($columns,',');
-            
-            $q = "$q ($columns) values ($values)";
-            
-            $stmt = self::PDO->prepare( $q );
-            $stmt->execute( $query );
-            unset( $query );
-            
-            if( $insert_id )
-                return self::PDO->lastInsertId();
-            else
-                return $stmt->rowCount();            
-        }catch( PDOException $e ) {
-            if( self::test )
-                echo "[ERROR] mysql class: insert function: ".$e->getMessage()."\n";
-            return false;
-        }
-    }
-        
     /**
     * Queries the database for a SELECT statement
     *
@@ -175,7 +136,7 @@ class mysql
     
         try {
             $return_type = $query[2];
-            $stmt = self::PDO->prepare( $query[0] );
+            $stmt = $this->PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
             unset( $query ); # If the query is from a loop this prevents only the first loop's SELECT from being used.
             
@@ -185,7 +146,7 @@ class mysql
                 default:        return $stmt->fetch( PDO::FETCH_ASSOC );  break;
             }
         }catch( PDOException $e ) {
-            if( self::test )
+            if( $this->test )
                 echo "[ERROR] mysql class: select function: ".$e->getMessage()."\n";
             return false;
         }
@@ -200,9 +161,9 @@ class mysql
     public function last_id() {
     
         try {
-            return self::PDO->lastInsertId();
+            return $this->PDO->lastInsertId();
         }catch( PDOException $e ) {
-            if( self::test )
+            if( $this->test )
                 echo "[ERROR] mysql class: errors function: ".$e->getMessage()."\n";
             return false;
         }
@@ -225,7 +186,7 @@ class mysql
             }
             return true;
         }catch( PDOException $e ) {
-            if( self::test )
+            if( $this->test )
                 echo "[ERROR] mysql class: errors function: ".$e->getMessage()."\n";
             return false;
         }
