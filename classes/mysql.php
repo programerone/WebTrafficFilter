@@ -128,29 +128,29 @@ class traffix_mysql
     * @param array  $query          An array containing the details of the SELECT.
     * @param string $query[0]       The SQL statement.
     * @param array  $query[1]       Assoc Array containing the column_name => values.
-    * @param array  $query[1]       Alternate return type, defaults to Associative Array if nothing is passed.
+    * @param bool   $one            Specifies to use fetch instead of fetchALL
     *
     * @return mixed  Returns the requested type or false on an error.
     */    
-    public function select( array &$query ) {
-    
+    public function select( array &$query, $one=false ) {
+
         try {
-            $return_type = $query[2];
             $stmt = $this->PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
             unset( $query ); # If the query is from a loop this prevents only the first loop's SELECT from being used.
             
-            switch( $return_type ) {
-                case 'BOTH':    return $stmt->fetch( PDO::FETCH_BOTH );   break;
-                case 'OBJ':     return $stmt->fetch( PDO::FETCH_OBJ );    break;
-                default:        return $stmt->fetch( PDO::FETCH_ASSOC );  break;
-            }
+            if( $one )
+                return $stmt->fetch();
+            else
+                return $stmt->fetchAll();
+                
         }catch( PDOException $e ) {
             if( $this->test )
                 echo "[ERROR] mysql class: select function: ".$e->getMessage()."\n";
             return false;
         }
     }
+
 
     
     /**

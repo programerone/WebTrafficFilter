@@ -20,6 +20,11 @@ class traffix extends traffix_mysql
     private $blacklisted_ip = false;
 
     /**
+    * @var int       Max wait time in hours until the request headers are recorded again for traffic monitoring
+    */
+    private $wait_time = 24;
+    
+    /**
     * Get all the request information
     *
     */    
@@ -28,7 +33,7 @@ class traffix extends traffix_mysql
         parent::__construct();
 
         $this->ip            = $_SERVER['REMOTE_ADDR'];
-        $this->rDNS          = gethostbyname( $this->ip );
+        $this->rDNS          = gethostbyaddr( $this->ip );
         $this->request_time  = time();
         
         if( function_exists( 'apache_request_headers' ) )
@@ -60,19 +65,19 @@ class traffix extends traffix_mysql
     * @return none
     */    
     private function check_for_known_headers() {
-    
+
         $headers = array(
-        'HTTP_ACCEPT',
-        'HTTP_ACCEPT_CHARSET',
-        'HTTP_ACCEPT_ENCODING',
-        'HTTP_ACCEPT_LANGUAGE',
-        'HTTP_CONNECTION',
-        'HTTP_HOST',
-        'HTTP_REFERER',
-        'HTTP_USER_AGENT' );
-        foreach( $headers as $h )
-            if( isset( $_SESSION[$h] ) )
-                $this->rHeaders[$h] = $_SESSION[$h];
+        'HTTP_ACCEPT'           => 'Accept',
+        'HTTP_ACCEPT_CHARSET'   => 'Accept-Charset',
+        'HTTP_ACCEPT_ENCODING'  => 'Accept-Encoding',
+        'HTTP_ACCEPT_LANGUAGE'  => 'Accept-Language',
+        'HTTP_CONNECTION'       => 'Connection',
+        'HTTP_HOST'             => 'Host',
+        'HTTP_REFERER'          => 'Referer',
+        'HTTP_USER_AGENT'       => 'User-Agent' );
+        foreach( $headers as $k=>$v )
+            if( isset( $_SESSION[$k] ) )
+                $this->rHeaders[$v] = $_SESSION[$k];
     }
 
     /**
@@ -85,17 +90,20 @@ class traffix extends traffix_mysql
     
         try{
             if( !self::good_bot() ) {            
-                $count[] = 'select count(1) from traffix_hits where ip=:ip';
-                $count[] = array('ip' => $this->ip);
-                list($exists)   = parent::select($count);
+                $count[] = 'select count(1) from traffix_request_log where ip=:ip and request_time<:max_session';
+                $count[] = array(
+                'ip'            => $this->ip
+                'max_session'   => ( $this->request_time - ( $this->max_wait * 60 * 60 ) )
+                );
+                list($exists)   = parent::select($count,1);
 
                 $traffix_hits = array(
                 'table'         => 'traffix_hits',
                 'ip'            => $this->ip,
                 'time_stamp'    => time() );
-                parent::insert($traffix_hits);
+                parent::insert( $traffix_hits );
 
-                if(!$exists) {
+                if(!$exists[0]) {
                     $traffix_request_log = array(
                     'table'             => 'traffix_request_log',
                     'ip'                => $this->ip,
