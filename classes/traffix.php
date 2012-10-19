@@ -171,10 +171,10 @@ class traffix extends traffix_mysql
 
         if( $value !== null )
             if( $this->rHeaders[$header] == $value )
-                return true;
+                return 1;
 
-        elseif( isset( $this->rHeader[$header] ) )
-            return true;
+        elseif( isset( $this->rHeaders[$header] ) )
+            return 1;
 
         return false;
     }
