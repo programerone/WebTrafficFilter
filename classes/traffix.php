@@ -172,11 +172,13 @@ class traffix extends traffix_mysql
         if( $value !== null )
             if( $this->rHeaders[$header] == $value )
                 return 1;
-
+            else
+                return 0;
+                
         elseif( isset( $this->rHeaders[$header] ) )
             return 1;
 
-        return false;
+        return 0;
     }
  
     /**
@@ -214,6 +216,9 @@ class traffix extends traffix_mysql
             return true;
             
         if( preg_match( '#\.crawl\.yahoo\.com$#', $this->rDNS ) )
+            return true;
+        
+        if( preg_match( '#\.google\.com$#', $this->rDNS ) )
             return true;
             
         return false;

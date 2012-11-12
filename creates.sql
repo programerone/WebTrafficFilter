@@ -24,3 +24,7 @@ ip varchar(40) not null default '',
 proxy tinyint(1) not null default 2,
 vpn tinyint(1) not null default 2,
 banned tinyint(1) not null default 0 );
+
+create table traffix_htaccess ( id int auto_increment primary key not null,
+content text not null default '',
+time_stamp int(11) not null default 0 );

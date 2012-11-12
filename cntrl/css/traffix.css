@@ -1,0 +1,50 @@
+body {
+ width:100%;
+ height:100%;
+ font-family:arial;
+ color:#111;
+ font-size:smaller;
+}
+
+img {
+ border:none;
+}
+
+#content {
+ position:relative;
+ width:1200px;
+ min-height:100%;
+ margin:0 auto;
+}
+
+#nav_bar {
+ position:relative;
+ width:100%;
+ height:30px;
+}
+
+.nav_option {
+ position:relative;
+ height:30px;
+ color:#222;
+ cursor:pointer;
+}
+
+.nav_option:hover {
+ background-color:#bbb;
+}
+
+.info_box {
+ position:relative;
+ width:100%;
+}
+
+.info_box_header {
+ position:relative;
+ width:100%;
+}
+
+.info {
+ height:30px;
+ display:block;
+}
