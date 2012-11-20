@@ -1,26 +1,8 @@
 <?php
+require_once dirname(dirname(__FILE__)).'/traffix_config.php';
+
 class traffix_mysql
 {
-
-    /**
-    * @var string   Default Hostname
-    */
-    private $host = 'localhost';
-
-    /**
-    * @var string   Default Database
-    */
-    private $db = 'mydatabase';
-
-    /**
-    * @var string   Default Username
-    */
-    private $user = 'username';
-
-    /**
-    * @var string   Default Password
-    */
-    private $pass = 'password';
 
     /**
     * @var obj      Default PDO Object
@@ -78,11 +60,11 @@ class traffix_mysql
     */
     public function connect( $host=null, $db=null, $user=null, $pass=null ) {
 
-        if( $host === null ) {
-            $host   = $this->host;
-            $db     = $this->db;
-            $user   = $this->user;
-            $pass   = $this->pass;
+        if( $host === null ) { 
+            $host   = MYSQL_HOST;
+            $db     = MYSQL_DB;
+            $user   = MYSQL_USER;
+            $pass   = MYSQL_PASS;
         }
         
         try {
@@ -151,7 +133,45 @@ class traffix_mysql
         }
     }
 
+    /**
+    * Queries the database for an INSERT without needing the SQL statement
+    *
+    * @param array  $query          Assoc Array containing the column_name => values.
+    * @param string $query[table]   Table name, should be first element.
+    * @param mixed  $insert_id      If passed, the id to the last inserted row is returned.
+    *
+    * @return mixed  The row count unless the last insert id is requested, false on failure.
+    */
+    public function insert( array &$query, $insert_id=null ) {
 
+        try {
+            $q = "insert into $query[table]";
+            unset($query['table']);
+
+            foreach( $query as $k=>$v ) {
+                $columns .= "$k,";
+                $values  .= ":$k,";
+            }
+            $columns = trim($columns,',');
+            $values  = trim($values,',');
+
+            $q = "$q ($columns) values ($values)";
+
+            $stmt = $this->PDO->prepare( $q );
+            $stmt->execute( $query );
+            unset( $query );
+
+            if( $insert_id )
+                return $this->PDO->lastInsertId();
+            else
+                return $stmt->rowCount();
+
+        }catch( PDOException $e ) {
+            if( $this->test )
+                echo "[ERROR] mysql class: insert function: ".$e->getMessage()."\n";
+            return false;
+        }
+    }
     
     /**
     * Gets the ID for the last inserted row.

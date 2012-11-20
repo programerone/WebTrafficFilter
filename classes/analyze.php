@@ -4,16 +4,6 @@ require_once dirname(__FILE__).'/mysql.php';
 class traffix_analyze extends traffix_mysql
 {
 
-    /**
-    * constant bool     Determines if the class is allowed to overwrite the .htaccess file
-    */ 
-    const ALLOW_HTACCESS_TO_BE_OVERWRITTEN = false;
-    
-    /**
-    * constant string   .htaccess file path, requires ending slash
-    */
-    const HTACCESS_FILE_PATH = '/var/www/yoursite.com/';
-
     public function __construct() {
 
         parent::__construct();
@@ -26,7 +16,7 @@ class traffix_analyze extends traffix_mysql
     */
     private function write_htaccess() {
         
-        if( !ALLOW_HTACCESS_TO_BE_OVERWRITTEN )
+        if( !ALLOW_HTACCESS_OVERWRITE )
             return false;
             
         try{    
@@ -47,7 +37,67 @@ class traffix_analyze extends traffix_mysql
         }
     }
 
-    
+    /**
+    *   Checks the request for signs that this user may not be legitimate
+    *
+    *   @var array      The entry for this ip in the request log table
+    *
+    *   @return array   Warning messages.
+    */
+    public function warnings( $request ) {
+
+	$reqh = json_decode($request['request_headers'],true);
+
+	if( !$reqh['User-Agent'] )
+	    $warnings[] = "MISSING HEADER: User Agent";
+
+	if( !$reqh['Host'] )
+	    $warnings[] = "MISSING HEADER: Host";
+
+	if( !$reqh['Accept'] )
+	    $warnings[] = "MISSING HEADER: Accept";
+
+	if( !$reqh['Accept-Language'] )
+	    $warnings[] = "MISSING HEADER: Accept Language";
+
+	if( !$reqh['Accept-Encoding'] )
+	    $warnings[] = "MISSING HEADER: Accept Encoding";
+
+	if( !$reqh['Connection'] )
+	    $warnings[] = "MISSING HEADER: Connection";
+
+	if( !$reqh['Cache-Control'] )
+	    $warnings[] = "MISSING HEADER: Cache Control";
+
+	if( IMG_DOWNLOAD_CHECK ) {
+	    $sql[] = 'select count(1) from traffix_img_file_hits where ip=:ip';
+            $sql[] = array( 'ip' => $request['ip'] );
+            list($img_file) = parent::select($sql,true);
+	    if( !$img_file )
+		$warnings[] = "VERIFICATION IMG FILE NOT DOWNLOADED";
+	}
+
+	if( CSS_DOWNLOAD_CHECK ) {
+	    $sql[] = 'select count(1) from traffix_css_file_hits where ip=:ip';
+	    $sql[] = array( 'ip' => $request['ip'] );
+	    list($css_file) = parent::select($sql,true);
+	    if( !$css_file )
+		$warnings[] = "CSS FILE NOT DOWNLOADED";
+	}
+
+	if( JS_DOWNLOAD_CHECK ) {
+	    $sql[] = 'select count(1) from traffix_js_file_hits where ip=:ip';
+            $sql[] = array( 'ip' => $request['ip'] );
+            list($js_file) = parent::select($sql,true);
+	    if( !$js_file ) 
+                $warnings[] = "JS FILE NOT DOWNLOADED";
+	}
+
+	if( !$warnings )
+		$warnings[] = "No warnings or deviations.";
+
+	return $warnings;		
+    }
     
 }
 ?>

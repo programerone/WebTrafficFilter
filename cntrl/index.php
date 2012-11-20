@@ -1,14 +1,15 @@
 <?
 require_once dirname(dirname(__FILE__)).'/classes/analyze.php';
-$a = new analyze;
+$a = new traffix_analyze;
 
-$suspicious = $a->select(array('select * from traffix_request_log where analyzed=0')); # change to suspicious SQL after panel is made
+$sql = array('select * from traffix_request_log where analyzed=0');
+$suspicious = $a->select($sql); # change to suspicious SQL after panel is made
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Traffix - Control Panel</title>
+    <title>Traffix - Control Panel - Suspicious Traffic</title>
     <meta charset="utf-8">
     <script src="js/functions.js"></script>    
     <link rel="stylesheet" href="css/traffix.css">
@@ -17,25 +18,28 @@ $suspicious = $a->select(array('select * from traffix_request_log where analyzed
 <body>
     <div id="content">
 
-        <div id="nav_bar">
-            <div class="nav_option">Home</div>
-            <div class="nav_option">Options</div>
-            <div class="nav_option">Blocked IPs</div>
-            <div class="nav_option">[+/-] Users</div>
-        </div>
+	<div id="details">
+		
+	</div>
+
+	<?include 'nav.html'?>
 
         <div class="info_box">
             <span class="info_box_header">Suspicious Traffic</span>
-            <span class="info small_cell">Initial Request</span>
+            <span class="info medium_cell">Initial Request</span>
             <span class="info small_cell">IP Address</span>
-            <span class="info small_cell">Reverse DNS</span>
+            <span class="info medium_cell">Reverse DNS</span>
             <span class="info large_cell">User Agent</span>
+	    <span class="info small_cell">Details</span><br><br>
             <?
-            foreach( $suspicious as $request ) {
-                echo "\n<span class='info small_cell'>$request[time_stamp]</span>\n";
-                echo "<span class='info small_cell'>$request[ip]</span>\n";
-                echo "<span class='info small_cell'>$request[rDNS]</span>\n";
-                echo "<span class='info small_cell'>$request[user_agent]</span>\n";
+	    foreach( $suspicious as $request ) {
+                echo "\n<span class='info medium_cell'>".date('r',$request['request_time'])."</span>\n";
+                echo "<span class='info small_cell' title='$request[ip]'>$request[ip]</span>\n";
+                echo "<span class='info medium_cell' title='$request[rDNS]'>$request[rDNS]</span>\n";
+                echo "<span class='info large_cell' title='".str_replace("'",'"',$request['user_agent'])."'>$request[user_agent]</span>\n";
+		echo "<span class='info small_cell'><span class='js_button' onclick='details(\"$request[id]\");'>View</span><br><br>\n";
+		echo "<div id='headers$request[id]' class='hidden_headers'>$request[request_headers]</div>\n";
+		echo "<div id='warnings$request[id]' class='hidden_headers'>".json_encode($a->warnings($request))."</div>\n";
             }
             ?>
         </div>

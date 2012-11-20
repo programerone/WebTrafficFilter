@@ -22,7 +22,7 @@ class traffix extends traffix_mysql
     /**
     * @var int       Max wait time in hours until the request headers are recorded again for traffic monitoring
     */
-    private $wait_time = 24;
+    private $max_wait = 24;
     
     /**
     * Get all the request information
@@ -50,13 +50,53 @@ class traffix extends traffix_mysql
         $this->method        = $_SERVER['REQUEST_METHOD'];
                 
         # Flags: Deny traffic missing these request headers when set to true, when the deny function is called.
-        $this->deny['Accept']             = false;
-        $this->deny['Accept-Encoding']    = false;
-        $this->deny['Cache-Control']      = false;
-        $this->deny['Connection']         = false;
-        $this->deny['Host']               = true;
-        $this->deny['Accept-Language']    = true;
-        $this->deny['User-Agent']         = true;
+	if( !self::good_bot() ) {
+            $this->deny['Accept']             = false;
+            $this->deny['Accept-Encoding']    = false;
+            $this->deny['Cache-Control']      = false;
+            $this->deny['Connection']         = false;
+            $this->deny['Host']               = false;
+            $this->deny['Accept-Language']    = false;
+            $this->deny['User-Agent']         = false;
+	}
+    }
+
+    /**
+    * Notes in the database that the css file was downloaded and the time it was accessed.
+    *
+    * @var string  The file path to the css file.
+    *
+    * @return none
+    */
+    public function monitor_css_file( $css_file_path ) {
+
+        $traffix_css_file_hits = array(
+        'table'         => 'traffix_css_file_hits',
+        'ip'            => $this->ip,
+        'time_stamp'    => time() );
+        parent::insert( $traffix_css_file_hits );
+
+	header('Content-Type: text/css');
+	echo file_get_contents( $css_file_path );
+    }
+
+    /**
+    * Notes in the database that the js file was downloaded and the time it was accessed.
+    *
+    * @var string  The file path to the js file.
+    *
+    * @return none
+    */
+    public function monitor_js_file( $js_file_path ) {
+
+        $traffix_js_file_hits = array(
+        'table'         => 'traffix_js_file_hits',
+        'ip'            => $this->ip,
+        'time_stamp'    => time() );
+        parent::insert( $traffix_js_file_hits );
+
+        header('Content-Type: text/javascript; charset=utf-8');
+        echo file_get_contents( $js_file_path );
     }
 
     /**
@@ -92,7 +132,7 @@ class traffix extends traffix_mysql
             if( !self::good_bot() ) {            
                 $count[] = 'select count(1) from traffix_request_log where ip=:ip and request_time<:max_session';
                 $count[] = array(
-                'ip'            => $this->ip
+                'ip'            => $this->ip,
                 'max_session'   => ( $this->request_time - ( $this->max_wait * 60 * 60 ) )
                 );
                 list($exists)   = parent::select($count,1);
@@ -255,30 +295,19 @@ class traffix extends traffix_mysql
     * @return bool  Returns true if blacklisted
     */
     private function blacklisted() {
-        # Get your blacklist from your db or modify the array, this is an example array (Baidu doesn't follow my robots.txt).
-        # This can also be done with htaccess, which would be more efficient, but if you don't have access this is an option.
+        # !! This can also be done with htaccess, which would be more efficient, but if you don't have access this is an option.
 
-        $user_agents = array(
-        'Yandex',
-        'Baiduspider' );
+	$sql[] = 'select count(1) from traffix_banned_user_agents where user_agent=:user_agent';
+	$sql[] = array(	'user_agent' => $this->user_agent );
+	list($bad_ua) = parent::select($sql,true);
 
-        $ips = array(
-        'ban.ned.ip.add.r' );
+	$sql[] = 'select count(1) from traffix_banned_ips where ip=:ip';
+	$sql[] = array( 'ip' => $this->ip );
+	list($bad_ip) = parent::select($sql,true);
 
-        if( $this->blacklisted_user_agent ) {
-            foreach( $user_agents as $banned )
-                if( strpos( $this->user_agent, $banned ) !== false )
-                    return true;
-        }
-
-        if( $this->blacklisted_ip ) {
-            foreach( $ips as $banned )
-                if( preg_match( "#$banned#", $this->ip ) )
-                    return true;
-        }
-
+	if( $bad_ua || $bad_ip )
+	    return true;
         return false;
     }
-    
 }
 ?>
