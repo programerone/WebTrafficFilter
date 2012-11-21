@@ -50,11 +50,12 @@ This project has 3 parts that add a layer of protection to your content.
 
 *   You can deny traffic by calling the deny() function. The deny function will check the request against your requirements and blacklists.
 
-	$traffix->deny();
+        $traffix->deny();
 
 ### Log Dependency File Downloads
 
 *   Unless the bot is using browser automation, there is a good chance that it will not exhibit some of the same behaviors. The traffix class provides tools to make it easy to log if your visitors are downloading css, javascript, and image files. Monitoring this behavior can help to identify automated traffic that is sending false headers to appear as regular traffic.
+
 ```
 // Enable CSS monitoring in traffix_config.php by setting CSS_DOWNLOAD_CHECK to true
 
@@ -67,8 +68,7 @@ require '/path/to/classes/traffix.php';
 $traffix = new traffix;
 $traffix->monitor_css_file('/path/to/css_source_file.css');
 ?>
-```
-```
+
 // Enable JS monitoring in traffix_config.php by setting JS_DOWNLOAD_CHECK to true
 
 // Call the js script from your HTML. [NOTE] You can hide the .php extension with .htaccess
@@ -81,4 +81,3 @@ $traffix = new traffix;
 $traffix->monitor_js_file('/path/to/js_source_file.js');
 ?>
 ```
-
