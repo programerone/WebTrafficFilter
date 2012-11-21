@@ -9,11 +9,9 @@ This project has 3 parts that add a layer of protection to your content.
 
 1. Logging.
 
-2. Analysis.
+2. Monitoring.
 
 3. Blocking.
-
-##  traffic class [logging]
 
 ### Log Traffic
 
@@ -47,5 +45,32 @@ This project has 3 parts that add a layer of protection to your content.
         $traffix->assert_request_header( 'MY_CUSTOM_HEADER' ); // returns true if exists
 
         $traffix->assert_request_header( 'HTTP_X_REQUESTED_WITH', 'xmlhttprequest' ); // returns true if exists & matches
+
+### Log Dependency File Downloads
+
+*   Unless the bot is using browser automation, there is a good chance that it will not exhibit some of the same behaviors. The traffix class provides tools to make it easy to log if your visitors are downloading css, javascript, and image files. Monitoring this behavior can help to identify automated traffic that is sending false headers to appear as regular traffic.
+
+	[CSS] // Enable CSS monitoring in traffix_config.php by setting CSS_DOWNLOAD_CHECK to true
+
+	// Call the css script from your HTML. [NOTE] You can hide the .php extension with .htaccess
+	<link rel="stylesheet" type="text/css" href="monitored_css_file.php">
+
+	// monitored_css_file.php
+	<?php
+	require '/path/to/classes/traffix.php';
+	$traffix = new traffix;
+	$traffix->monitor_css_file('/path/to/css_source_file.css');
+	?>
+
+	[JS] // Enable JS monitoring in traffix_config.php by setting JS_DOWNLOAD_CHECK to true
+	// Call the js script from your HTML. [NOTE] You can hide the .php extension with .htaccess
+	<script src="monitored_js_file.php"></script>
+
+	// monitored_js_file.php
+	<?php
+	require '/path/to/classes/traffix.php';
+        $traffix = new traffix;
+        $traffix->monitor_js_file('/path/to/js_source_file.css');
+        ?>
 
 

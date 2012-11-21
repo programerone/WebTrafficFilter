@@ -1,5 +1,9 @@
 <?
-# mysql connection info
+# lock the control panel by ip?
+const IP_LOCK  = false;
+const ADMIN_IP = '';
+
+# mysql connection
 const MYSQL_HOST = 'localhost';
 const MYSQL_DB	 = 'traffix';
 const MYSQL_USER = 'user';

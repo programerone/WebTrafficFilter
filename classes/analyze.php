@@ -7,6 +7,10 @@ class traffix_analyze extends traffix_mysql
     public function __construct() {
 
         parent::__construct();
+
+	if( IP_LOCK && getenv('REMOTE_ADDR')!=ADMIN_IP ) {
+		die('Unauthorized IP');
+	}
     }
 
     /**
@@ -35,6 +39,16 @@ class traffix_analyze extends traffix_mysql
         }catch( Exception $e ) {
             return false;
         }
+    }
+
+    /**
+    *   Redirects user to specified page
+    *
+    *   @var page	The page to be redirected to.
+    */
+    public function redir( $page ) {
+
+	die( header( "Location: $page" ) );
     }
 
     /**
@@ -94,10 +108,9 @@ class traffix_analyze extends traffix_mysql
 	}
 
 	if( !$warnings )
-		$warnings[] = "No warnings or deviations.";
+		return false;
 
 	return $warnings;		
-    }
-    
+    }  
 }
 ?>

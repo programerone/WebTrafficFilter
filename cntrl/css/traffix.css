@@ -78,6 +78,10 @@ img {
  width:400px;
 }
 
+.xlarge_cell {
+ width:900px;
+}
+
 .medium_cell {
  width:250px;
 }
@@ -137,7 +141,7 @@ img {
  padding:5px;
  background-color:#ddd;
  border-radius:4px;
- position:absolute;
+ position:fixed;
  z-index:2;
  left:50%;
  margin-left:-330px;

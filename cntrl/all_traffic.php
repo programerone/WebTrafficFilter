@@ -2,29 +2,14 @@
 require_once dirname(dirname(__FILE__)).'/classes/analyze.php';
 $a = new traffix_analyze;
 
-$sql = array('select * from traffix_request_log where analyzed=0');
-$new_traffic = $a->select($sql);
-foreach($new_traffic as $n) {
-
-    $sql[] = 'update traffix_request_log set analyzed=1 where id=:id';
-    $sql[] = array('id'=>$n['id']);
-    $a->alter($sql);
-
-    if( $a->warnings($n)!==false ) {
-	$sql[] = 'insert into traffix_suspicious_traffic (ip) values (:ip)';
-	$sql[] = array('ip'=>$n['ip']);
-	$a->alter($sql);
-    }
-}
-
-$sql = array('select trl.* from traffix_request_log trl, traffix_suspicious_traffic trt where trt.ip=trl.ip');
+$sql = array('select * from traffix_request_log order by id desc');
 $suspicious = $a->select($sql);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Traffix - Control Panel - Suspicious Traffic</title>
+    <title>Traffix - Control Panel - All Traffic</title>
     <meta charset="utf-8">
     <script src="js/functions.js"></script>    
     <link rel="stylesheet" href="css/traffix.css">

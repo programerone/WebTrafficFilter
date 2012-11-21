@@ -92,7 +92,7 @@ class traffix_mysql
         try {
             $stmt = $this->PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
-            unset( $query );
+            $query = array();
             if( $insert_id )
                 return $this->PDO->lastInsertId();
             else
@@ -119,7 +119,7 @@ class traffix_mysql
         try {
             $stmt = $this->PDO->prepare( $query[0] );
             $stmt->execute( $query[1] );
-            unset( $query ); # If the query is from a loop this prevents only the first loop's SELECT from being used.
+            $query = array(); # If the query is from a loop this prevents only the first loop's SELECT from being used.
             
             if( $one )
                 return $stmt->fetch();
@@ -159,7 +159,7 @@ class traffix_mysql
 
             $stmt = $this->PDO->prepare( $q );
             $stmt->execute( $query );
-            unset( $query );
+            $query = array();
 
             if( $insert_id )
                 return $this->PDO->lastInsertId();

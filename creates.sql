@@ -19,12 +19,6 @@ rh_connection tinyint(1) not null default 0,
 rh_user_agent tinyint(1) not null default 0,
 analyzed tinyint(1) not null default 0 );
 
-create table traffix_analysis ( id int auto_increment primary key not null,
-ip varchar(40) not null default '',
-proxy tinyint(1) not null default 2,
-vpn tinyint(1) not null default 2,
-banned tinyint(1) not null default 0 );
-
 create table traffix_htaccess ( id int auto_increment primary key not null,
 content text not null default '',
 time_stamp int(11) not null default 0 );
@@ -44,3 +38,6 @@ time_stamp int(11) not null default 0 );
 create table traffix_img_file_hits ( id int auto_increment primary key not null,
 ip varchar(40) not null default '',
 time_stamp int(11) not null default 0 );
+
+create table traffix_suspicious_traffic ( id int auto_increment primary key not null,
+ip varchar(40) not null default '' );
