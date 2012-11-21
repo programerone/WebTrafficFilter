@@ -5,22 +5,12 @@ class traffix extends traffix_mysql
 {
 
     /**
-    * @var mixed    If set this string will be required to be in the referer header.
+    * @var mixed  If set this string will be required to be in the referer header.
     */
     public $referer = null;
 
     /**
-    * @var bool      If true the deny function will check the useragent against a blacklist.
-    */
-    private $blacklisted_user_agent = true;
-    
-    /**
-    * @var bool      If true the deny function will check the ip against a blacklist.
-    */
-    private $blacklisted_ip = false;
-
-    /**
-    * @var int       Max wait time in hours until the request headers are recorded again for traffic monitoring
+    * @var int   Max wait time in hours until the request headers are recorded again for traffic monitoring
     */
     private $max_wait = 24;
     
@@ -278,13 +268,13 @@ class traffix extends traffix_mysql
 
         foreach( $this->deny as $header=>$required )
             if( $required && !isset( $this->rHeaders[$header] ) )
-                return true;
+                self::banned();
 
-        if( $this->referer )
-            self::assert_referer( $referer );
+        if( $this->referer && !self::assert_referer( $referer ) ) 
+ 	    self::banned();
 
         if( self::blacklisted() )
-            return true;
+            self::banned();
 
         return false;
     }
@@ -297,17 +287,32 @@ class traffix extends traffix_mysql
     private function blacklisted() {
         # !! This can also be done with htaccess, which would be more efficient, but if you don't have access this is an option.
 
-	$sql[] = 'select count(1) from traffix_banned_user_agents where user_agent=:user_agent';
-	$sql[] = array(	'user_agent' => $this->user_agent );
-	list($bad_ua) = parent::select($sql,true);
+	if( CHECK_BANNED_USER_AGENTS ) {
+	    $sql[] = 'select count(1) from traffix_banned_user_agents where user_agent=:user_agent';
+	    $sql[] = array('user_agent'=>$this->user_agent);
+	    list($banned) = parent::select($sql,true);
+	    if( $banned )
+		self::banned();
+	}
 
-	$sql[] = 'select count(1) from traffix_banned_ips where ip=:ip';
-	$sql[] = array( 'ip' => $this->ip );
-	list($bad_ip) = parent::select($sql,true);
+	if( CHECK_BANNED_IPS ) {
+	    $sql[] = 'select count(1) from traffix_banned_ips where ip=:ip';
+	    $sql[] = array( 'ip' => $this->ip );
+	    list($banned) = parent::select($sql,true);
+	    if( $banned )
+	        self::banned();
+	}
 
-	if( $bad_ua || $bad_ip )
-	    return true;
         return false;
+    }
+
+    /**
+    * Sends the user to a banned page
+    *
+    * @return none
+    */
+    private function banned() {
+	die( header( 'Location: '.BANNED_PAGE ) );
     }
 }
 ?>
