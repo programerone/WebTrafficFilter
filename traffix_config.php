@@ -5,9 +5,9 @@ const ADMIN_IP = '';
 
 # mysql connection
 const MYSQL_HOST = 'localhost';
-const MYSQL_DB	 = 'insurance';
-const MYSQL_USER = 'root';
-const MYSQL_PASS = '!@685299!';
+const MYSQL_DB	 = 'traffix';
+const MYSQL_USER = 'user';
+const MYSQL_PASS = 'password';
 
 # verify that these file types are being downloaded?
 const CSS_DOWNLOAD_CHECK = false;
