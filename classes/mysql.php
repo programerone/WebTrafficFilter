@@ -20,11 +20,11 @@ class traffix_mysql
     */
     public function __construct( $test=null ) {
     
+        self::connect();
         if( $test ) {
             $this->test = $test;
             self::errors('EXCEPTION');
         }
-        self::connect();
     }
 
     /**
@@ -200,9 +200,9 @@ class traffix_mysql
     
         try {
             switch( $level ) {
-                case 'EXCEPTION':   $this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );   break;
-                case 'WARNING':     $this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING );     break;
-                default:            $this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT );      break;
+                case 'EXCEPTION':   $this->PDO->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );   break;
+                case 'WARNING':     $this->PDO->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING );     break;
+                default:            $this->PDO->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT );      break;
             }
             return true;
         }catch( PDOException $e ) {

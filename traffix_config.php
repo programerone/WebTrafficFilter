@@ -1,4 +1,4 @@
-<?
+<?php
 # lock the control panel by ip?
 const IP_LOCK  = false;
 const ADMIN_IP = '';
