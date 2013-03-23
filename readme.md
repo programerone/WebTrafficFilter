@@ -1,9 +1,9 @@
-[traffix] Bot Detection and Traffic Analysis
-=========================================================
+Bot Detection and Traffic Analysis Classes
+==========================================
 
 ##  Description
 
-This project tries to help identify suspicious traffic for logging or blocking. It provides some simple tools to determine if page requests are coming from natural traffic or if they are suspected as coming from automated scripts.
+This project tries to help identify suspicious traffic for logging or blocking. It provides some simple tools to determine if page requests are coming from natural traffic or if they are suspected as coming from automated scripts. The settings can be adjusted and users can be blocked by several fingerprints in their traffic including headers, page access speed, and if they are downloading all the resources the page referrences, such as CSS, Javascript and image files. Aside from page access speed, these classes are not entirely effective against browser automation.
 
 This project has 3 parts that add a layer of protection to your content.
 
