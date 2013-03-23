@@ -35,7 +35,7 @@ This project has 3 parts that add a layer of protection to your content.
 
 *   All major browsers reliably send certain headers that may be absent in traffic coming from automated sources. When a request is made missing one or all of these headers you may want to log the request as suspicious or deny the traffic.
 
-        // These headers are required by default
+        // These headers are checked for by default.
         Host
         Accept-Language
         User-Agent
@@ -54,8 +54,9 @@ This project has 3 parts that add a layer of protection to your content.
 
 ### Log Dependency File Downloads
 
-*   Unless the bot is using browser automation, there is a good chance that it will not exhibit some of the same behaviors. The traffix class provides tools to make it easy to log if your visitors are downloading css, javascript, and image files. Monitoring this behavior can help to identify automated traffic that is sending false headers to appear as regular traffic.
+*   Unless the bot is using browser automation, there is a good chance that it will not exhibit some of the same behaviors as legitimate traffic. The traffix class provides tools to make it easy to log if your visitors are downloading css, javascript, and image files. Monitoring this behavior can help to identify automated traffic that is sending false headers to appear as regular traffic. Even if a user is blocking javascript from executing, the actual javascript source file should still be downloaded by their browser.
 
+*   Track and monitor the download of a CSS file
 ```
 // Enable CSS monitoring in traffix_config.php by setting CSS_DOWNLOAD_CHECK to true
 
@@ -68,7 +69,10 @@ require '/path/to/classes/traffix.php';
 $traffix = new traffix;
 $traffix->monitor_css_file('/path/to/css_source_file.css');
 ?>
+```
 
+*   Track and monitor the download of a Javascript file
+```
 // Enable JS monitoring in traffix_config.php by setting JS_DOWNLOAD_CHECK to true
 
 // Call the js script from your HTML. [NOTE] You can hide the .php extension with .htaccess
