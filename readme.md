@@ -46,6 +46,13 @@ This project has 3 parts that add a layer of protection to your content.
 
         $traffix->assert_request_header( 'HTTP_X_REQUESTED_WITH', 'xmlhttprequest' ); // returns true if exists & matches
 
+### Track the Time Between Page Hits
+
+*   Bots can crawl faster than humans can access pages on your site. Traffix keeps track of the page access speed of visitors.
+
+        $traffix->pages_per_minute();
+
+
 ### Deny Traffic Based w/Rules and Blacklists
 
 *   You can deny traffic by calling the deny() function. The deny function will check the request against your requirements and blacklists.

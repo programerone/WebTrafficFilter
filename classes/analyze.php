@@ -1,45 +1,47 @@
 <?php
+namespace traffix;
 require_once dirname(__FILE__).'/mysql.php';
 
-class traffix_analyze extends traffix_mysql
+class analyze extends \traffix\mysql
 {
 
-    public function __construct() {
+  public function __construct() {
 
-        parent::__construct();
+    parent::__construct();
 
-	if( IP_LOCK && getenv('REMOTE_ADDR')!=ADMIN_IP ) {
-		die('Unauthorized IP');
-	}
-    }
+    if( IP_LOCK && getenv('REMOTE_ADDR')!=ADMIN_IP ) {
+		  die('Unauthorized IP');
+	  }
+  }
 
-    /**
-    *   Writes the HTACCESS file using the provided content and an appends a rule blocking all ips marked as bad.
-    *
-    *   @return bool    True on success
-    */
-    private function write_htaccess() {
+  /**
+  *   Writes the HTACCESS file using the provided content and an appends a rule blocking all ips marked as bad.
+  *
+  *   @return bool    True on success
+  */
+  private function write_htaccess() {
         
-        if( !ALLOW_HTACCESS_OVERWRITE )
-            return false;
+    if( !ALLOW_HTACCESS_OVERWRITE )
+      return false;
             
-        try{    
-            list($content) = parent::select(array('select content from traffix_htaccess order by id desc limit 1'));
-        
-            $banned_ips = parent::select(array('select ip from traffix_analysis where banned=1 order by id asc'));
-        
-            if( count($banned_ips) ) {
-                $htaccess = "\norder allow,deny\n";
-                foreach($banned_ips as $ip)
-                        $htaccess.= "deny from $ip\n";
-                $htaccess.= "allow from all\n";
-            }
-            file_put_contents( HTACCESS_FILE_PATH.'.htaccess', $content.$htaccess );
-            return true;
-        }catch( Exception $e ) {
-            return false;
-        }
+    try{    
+      list($content) = parent::select(array('select content from traffix_htaccess order by id desc limit 1'));
+       
+      $banned_ips = parent::select(array('select ip from traffix_analysis where banned=1 order by id asc'));
+      
+      if( count($banned_ips) ) {
+        $htaccess = "\norder allow,deny\n";
+        foreach($banned_ips as $ip)
+          $htaccess.= "deny from $ip\n";
+          $htaccess.= "allow from all\n";
+      }
+      file_put_contents( HTACCESS_FILE_PATH.'.htaccess', $content.$htaccess );
+      return true;
+
+    }catch( Exception $e ) {
+        return false;
     }
+  }
 
     /**
     *   Redirects user to specified page

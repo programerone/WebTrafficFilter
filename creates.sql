@@ -17,11 +17,9 @@ rh_accept_language tinyint(1) not null default 0,
 rh_cache_control tinyint(1) not null default 0,
 rh_connection tinyint(1) not null default 0,
 rh_user_agent tinyint(1) not null default 0,
+page_count int not null default 1,
+pages_per_minute not null default 0,
 analyzed tinyint(1) not null default 0 );
-
-create table traffix_htaccess ( id int auto_increment primary key not null,
-content text not null default '',
-time_stamp int(11) not null default 0 );
 
 create table traffix_banned_ips ( ip varchar(40) primary key not null );
 
