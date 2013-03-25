@@ -1,9 +1,9 @@
 <?php
 # mysql connection
-const MYSQL_HOST = 'HOST';
-const MYSQL_DB	 = 'DATABASE';
-const MYSQL_USER = 'USER';
-const MYSQL_PASS = 'PASSWORD';
+const MYSQL_HOST = '';
+const MYSQL_DB	 = '';
+const MYSQL_USER = '';
+const MYSQL_PASS = '';
 
 # verify that these file types are being downloaded?
 const CSS_DOWNLOAD_CHECK = false;

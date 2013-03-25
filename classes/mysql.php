@@ -1,5 +1,6 @@
 <?php
-require_once dirname(dirname(__FILE__)).'/traffix_config.php';
+
+require_once dirname( dirname( __FILE__ ) ).'/traffix_config.php';
 
 class mysql
 {
@@ -21,6 +22,7 @@ class mysql
   public function __construct( $test=null ) {
     
     self::connect();
+
     if( $test ) {
       $this->test = $test;
       self::errors('EXCEPTION');
@@ -34,21 +36,38 @@ class mysql
   public function __destruct() {
 
     $this->PDO = null;
-
   }
+
 
   /**
-  * Toggles testing mode.
+  * Holds commonly used queries to help make more readable database calls.
   *
-  * @param bool $test  True for on, false for off.
+  * @param string $query_name  The name of the query
   *
-  */    
-  public function testing_mode( bool $test ) {
-    
-    $this->test = $test;
-    self::errors('EXCEPTION');
+  * @return string  Query
+  */
+  public function named_queries( $query_name ) {
+
+    try {
+      // example
+      $queries['get employee address by name'] = 'SELECT address FROM employees_table WHERE first_name=:first_name AND last_name=:last_name LIMIT 1';
+
+      if( isset( $queries[$query_name] ) )
+        return $queries[$query_name];
+
+      else
+        return $query_name;
+
+    } catch( Exception $e ) {
+
+      if( $this->test )
+        self::print_error( __METHOD__, $e );
+
+      return $query_name;
+    }
+
   }
-    
+
   /**
   * Connects to the database, if no hostname is sent the default login credential class variables are used.
   *
@@ -73,8 +92,10 @@ class mysql
       return true;
 
     }catch( PDOException $e ) {
+
       if( $this->test )
-        echo "[ERROR] mysql class: connect function: ".$e->getMessage()."\n";
+        self::print_error( __METHOD__, $e->getMessage() );
+
       return false;
     }
   }
@@ -83,16 +104,16 @@ class mysql
   * Queries the database for an INSERT or UPDATE statement
   *
   * @param array  $query          An array containing the details of the INSERT or UPDATE.
-  * @param string $query[0]       The SQL statement.
+  * @param string $query[0]       The SQL statement, or the named query.
   * @param array  $query[1]       Assoc Array containing the column_name => values.
   * @param mixed  $insert_id      If passed, the id to the last inserted row is returned.
   *
   * @return mixed  The row count unless the last insert id is requested, false on failure.
   */
-  public function alter( array &$query, $insert_id=null ) {
+  public function alter( array &$query, $insert_id=FALSE ) {
     
     try {
-      $stmt = $this->PDO->prepare( $query[0] );
+      $stmt = $this->PDO->prepare( self::named_queries( $query[0] ) );
       foreach( $query[1] as $k=>$v )
         $stmt->bindParam(":$k",$v);
 
@@ -104,8 +125,10 @@ class mysql
         return $stmt->rowCount();
 
     }catch( PDOException $e ) {
+
       if( $this->test )
-        echo "[ERROR] mysql class: alter function: ".$e->getMessage()."\n";
+        self::print_error( __METHOD__, $e->getMessage() );
+
       return false;
     }
   }
@@ -114,16 +137,17 @@ class mysql
   * Queries the database for a SELECT statement
   *
   * @param array  $query          An array containing the details of the SELECT.
-  * @param string $query[0]       The SQL statement.
+  * @param string $query[0]       The SQL statement, or the named query.
   * @param array  $query[1]       Assoc Array containing the column_name => values.
   * @param bool   $one            Specifies to use fetch instead of fetchALL
   *
   * @return mixed  Returns the requested type or false on an error.
   */    
-  public function select( array &$query, $one=false ) {
+  public function select( array &$query, $one=FALSE ) {
 
     try {
-      $stmt = $this->PDO->prepare( $query[0] );
+
+      $stmt = $this->PDO->prepare( self::named_queries( $query[0] ) );
       $stmt->execute( $query[1] );
       $query = array(); # If the query is from a loop this prevents only the first loop's SELECT from being used.
             
@@ -133,8 +157,9 @@ class mysql
         return $stmt->fetchAll();
                
     }catch( PDOException $e ) {
+
       if( $this->test )
-        echo "[ERROR] mysql class: select function: ".$e->getMessage()."\n";
+        self::print_error( __METHOD__, $e->getMessage() );    
         return false;
     }
   }
@@ -142,13 +167,13 @@ class mysql
   /**
   * Queries the database for an INSERT without needing the SQL statement
   *
-  * @param array  $query          Assoc Array containing the column_name => values.
   * @param string $query[table]   Table name, should be first element.
+  * @param array  $query          Assoc Array containing the column_name => values.
   * @param mixed  $insert_id      If passed, the id to the last inserted row is returned.
   *
   * @return mixed  The row count unless the last insert id is requested, false on failure.
   */
-  public function insert( array &$query, $insert_id=null ) {
+  public function insert( array &$query, $insert_id=FALSE ) {
 
     try {
       $q = "insert into $query[table]";
@@ -173,9 +198,11 @@ class mysql
         return $stmt->rowCount();
 
     }catch( PDOException $e ) {
+
       if( $this->test )
-        echo "[ERROR] mysql class: insert function: ".$e->getMessage()."\n";
-        return false;
+        self::print_error( __METHOD__, $e->getMessage() );
+
+      return false;
     }
   }
     
@@ -190,9 +217,11 @@ class mysql
       return $this->PDO->lastInsertId();
 
     }catch( PDOException $e ) {
+
       if( $this->test )
-        echo "[ERROR] mysql class: errors function: ".$e->getMessage()."\n";
-        return false;
+        self::print_error( __METHOD__, $e->getMessage() );
+
+      return false;
     }
   }
     
@@ -214,10 +243,26 @@ class mysql
       return true;
 
     }catch( PDOException $e ) {
+
       if( $this->test )
-        echo "[ERROR] mysql class: errors function: ".$e->getMessage()."\n";
-        return false;
+        self::print_error( __METHOD__, $e->getMessage() );
+
+      return false;
     }
   }
+
+  /**
+  * Prints error message
+  *
+  * @param string $method  Function name
+  * @param string $error   Error message
+  *
+  */
+  private function print_error( $method, $error ) {
+    try {
+      echo "[ERROR] $method: $error\n";
+    } catch( Exception $e ) { die("Unable to print error: $e"); }
+  }
+
 }
 ?>

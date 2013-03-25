@@ -8,14 +8,16 @@ class traffix extends mysql
   * @var int   Max wait time in hours until the request headers are recorded again for traffic monitoring
   */
   private $max_wait = 24;
-    
+
   /**
   * Get all the request information
   *
+  * @ var mysql_errors_on bool  Pass true to turn on error reporting.
+  *
   */    
-  public function __construct() {
+  public function __construct( $mysql_errors_on=null, $ip_lock=null ) {
     
-    parent::__construct(1);
+    parent::__construct( $mysql_errors_on, $ip_lock );
 
     $this->ip            = $_SERVER['REMOTE_ADDR'];
     $this->rDNS          = gethostbyaddr( $this->ip );
@@ -57,14 +59,52 @@ class traffix extends mysql
   */
   public function monitor_css_file( $css_file_path ) {
 
-    $traffix_css_file_hits = array(
-      'table'         => 'traffix_css_file_hits',
-      'ip'            => $this->ip,
-      'time_stamp'    => time() );
-    parent::insert( $traffix_css_file_hits );
+    try {
+      $query = array(
+        'table'         => 'traffix_css_file_hits',
+        'ip'            => $this->ip,
+        'time_stamp'    => time() );
+      parent::insert( $query );
 
-    header('Content-Type: text/css');
-	  echo file_get_contents( $css_file_path );
+     header('Content-Type: text/css');
+      echo file_get_contents( $css_file_path );
+
+    } catch( Exception $e ) {
+      return 0;
+    }
+  }
+
+  /**
+  * Notes in the database that the image file was downloaded and the time it was accessed.
+  *
+  * @var string  The file path to the image.
+  * @var string  The type of the image. ( jpeg, png, or bmp )
+  *
+  * @return none
+  */
+  public function monitor_image_file( $image_file_path, $type ) {
+
+    try {
+
+      $query = array(
+        'table'       => 'traffix_img_file_hits',
+        'ip'          => $this->ip,
+        'time_stamp'  => time() );
+      parent::insert( $query );
+
+      $headers['png'] = 'image/png';
+      $headers['jpg'] = 'image/jpeg';
+      $headers['bmp'] = 'image/bmp';
+
+      if( !isset($headers[$type]) )
+        return 0;
+
+      header($headers[$type]);
+      echo file_get_contents( $image_file_path );
+
+    } catch( Exception $e ) {
+      return 0;
+    }
   }
 
   /**
@@ -76,14 +116,19 @@ class traffix extends mysql
   */
   public function monitor_js_file( $js_file_path ) {
 
-    $traffix_js_file_hits = array(
-      'table'         => 'traffix_js_file_hits',
-      'ip'            => $this->ip,
-      'time_stamp'    => time() );
-    parent::insert( $traffix_js_file_hits );
+    try {
+      $query = array(
+        'table'         => 'traffix_js_file_hits',
+        'ip'            => $this->ip,
+        'time_stamp'    => time() );
+      parent::insert( $query );
 
-    header('Content-Type: text/javascript; charset=utf-8');
-    echo file_get_contents( $js_file_path );
+      header('Content-Type: text/javascript; charset=utf-8');
+      echo file_get_contents( $js_file_path );
+
+    } catch( Exception $e ) {
+      return 0;
+    }
   }
 
   /**
