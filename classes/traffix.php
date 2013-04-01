@@ -99,7 +99,7 @@ class traffix extends mysql
       if( !isset($headers[$type]) )
         return 0;
 
-      header($headers[$type]);
+      header('Content-Type: '.$headers[$type]);
       echo file_get_contents( $image_file_path );
 
     } catch( Exception $e ) {
