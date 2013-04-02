@@ -336,6 +336,40 @@ class traffix extends mysql
   }
 
   /**
+  * Checks for known characteristics of the browser in the User Agent
+  *
+  * @return bool  True if matches expected pattern
+  */
+  public function check_browser_pattern() {
+
+    try {
+
+      $headers = array_keys( $this->rHeaders );
+      if( preg_match("/ Firefox/i", $this->user_agent) != false &&
+          ( $headers[0] != 'Host' ||
+            $headers[1] != 'User-Agent' ||
+            $headers[2] != 'Accept' ) ) {
+        return FALSE;
+
+      }elseif( preg_match("/ Chrome/i", $this->user_agent) != false &&
+          ( $headers[0] != 'Host' ||
+            $headers[1] != 'Connection' ||
+            ( $headers[2] != 'Cache-Control' && $headers[2] != 'Accept' ) ) ) {
+        return FALSE;
+      
+      }elseif( preg_match("/ MSIE/", $this->user_agent) != false && $headers[0] != 'Accept' ) {
+        return FALSE;
+      }
+
+      return TRUE;
+
+    } catch( Exception $e ) {
+      die(__METHOD__);
+    }
+  }
+
+
+  /**
   * Checks User-Agent header against a blacklist
   *
   * @return bool  Returns true if blacklisted

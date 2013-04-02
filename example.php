@@ -12,7 +12,6 @@ $DOMAIN = $_SERVER['HTTP_HOST'];
   </head>
   <body>
 <?php
-
 echo "<b>Request</b>:<br>";
 echo "IP Address: ".$traffix->ip;
 echo "<br>Reverse DNS: ".$traffix->rDNS;
@@ -48,9 +47,18 @@ if( $traffix->assert_request_method("POST") )
   echo "<span style='color:green;font-weight:bold;'>Request made with POST</span><br>";
 else
   echo "<span style='color:red;font-weight:bold;'>Request made with GET</span><br>";
+
+
+// Check if the browser matches the common request header pattern.
+echo "<br><b>Browser Request Header Pattern</b><br>";
+if( $traffix->check_browser_pattern() )
+  echo "<span style='color:green;font-weight:bold;'>Request Header Pattern is okay</span><br>";
+else
+  echo "<span style='color:red;font-weight:bold;'>Something is wrong with the Request Header Pattern</span><br>";
+
 ?>
 <br>
-<a href="<?=$_SERVER['PATH_INFO']?>">Visit this page with a local link.</a>
+<a href="example.php">Visit this page with a local link.</a>
 <br>
 <script type="text/javascript">
   did_this_page_load();

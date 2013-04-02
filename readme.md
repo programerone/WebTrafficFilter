@@ -63,9 +63,7 @@ This project has 3 parts that add a layer of protection to your content.
 
 *   Unless the bot is using browser automation, there is a good chance that it will not exhibit some of the same behaviors as legitimate traffic. The traffix class provides tools to make it easy to log if your visitors are downloading css, javascript, and image files. Monitoring this behavior can help to identify automated traffic that is sending false headers to appear as regular traffic. Even if a user is blocking javascript from executing, the actual javascript source file should still be downloaded by their browser.
 
-        // Enable CSS monitoring in traffix_config.php by setting CSS_DOWNLOAD_CHECK to true
-        
-        // Call the css script from your HTML. [NOTE] You can hide the .php extension with .htaccess
+        // CSS Monitoring: Call the css script from your HTML. [NOTE] You can hide the .php extension with .htaccess
         <link rel="stylesheet" type="text/css" href="monitored_css_file.php">
         
         // monitored_css_file.php
@@ -75,9 +73,8 @@ This project has 3 parts that add a layer of protection to your content.
         $traffix->monitor_css_file('/path/to/css_source_file.css');
         ?>
 
-        // Enable JS monitoring in traffix_config.php by setting JS_DOWNLOAD_CHECK to true
         
-        // Call the js script from your HTML. [NOTE] You can hide the .php extension with .htaccess
+        // JS Monitoring: Call the js script from your HTML. [NOTE] You can hide the .php extension with .htaccess
         <script src="monitored_js_file.php"></script>
         
         // monitored_js_file.php
