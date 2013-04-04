@@ -115,10 +115,10 @@ class mysql
     try {
       $stmt = $this->PDO->prepare( self::named_queries( $query[0] ) );
       foreach( $query[1] as $k=>$v )
-        $stmt->bindParam(":$k",$v);
+        $stmt->bindValue(":$k",$v);
 
       $stmt->execute();
-      $query = array();
+      $query = NULL;
       if( $insert_id )
         return $this->PDO->lastInsertId();
       else
@@ -149,7 +149,7 @@ class mysql
 
       $stmt = $this->PDO->prepare( self::named_queries( $query[0] ) );
       $stmt->execute( $query[1] );
-      $query = array(); # If the query is from a loop this prevents only the first loop's SELECT from being used.
+      $query = NULL; # If the query is from a loop this prevents only the first loop's SELECT from being used.
             
       if( $one )
         return $stmt->fetch();
@@ -190,7 +190,7 @@ class mysql
 
       $stmt = $this->PDO->prepare( $q );
       $stmt->execute( $query );
-      $query = array();
+      $query = NULL;
 
       if( $insert_id )
         return $this->PDO->lastInsertId();
